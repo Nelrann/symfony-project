@@ -208,22 +208,32 @@ Le script effectue automatiquement :
 | MakerBundle / DebugBundle | Installés | Non installés (`--no-dev`) |
 | OPcache `validate_timestamps` | `1` | `0` (cache figé) |
 | Mailhog | Activé | Désactivé (SMTP réel) |
-| Nginx | Port `8080` | Ports `80`/`443` |
+| Nginx | Port `8080` | Derrière Caddy (ports `80`/`443`) |
+| Caddy | Non installé | Reverse proxy + HTTPS auto (Let's Encrypt) |
 | HTTPS | Non | À configurer (voir ci-dessous) |
 
-### HTTPS / SSL
+### HTTPS / SSL (automatique via Caddy)
 
-Pour activer HTTPS, modifiez `docker/nginx/prod.conf` pour écouter sur `443 ssl` et montez vos certificats :
+Le HTTPS est géré automatiquement par **Caddy**, qui provisionne et renouvelle les certificats Let's Encrypt sans aucune configuration manuelle.
 
-```yaml
-# docker-compose.prod.yml (section nginx)
-volumes:
-  - ./docker/nginx/prod.conf:/etc/nginx/conf.d/default.conf:ro
-  - ./certs/fullchain.pem:/etc/nginx/certs/fullchain.pem:ro
-  - ./certs/privkey.pem:/etc/nginx/certs/privkey.pem:ro
+1. Définissez votre domaine dans `.env.prod.local` :
+
+```env
+DOMAIN=app.tondomaine.com
+DEFAULT_URI=https://app.tondomaine.com
 ```
 
-Vous pouvez utiliser [Let's Encrypt](https://letsencrypt.org/) avec un reverse proxy (Traefik, Caddy) ou générer les certificats manuellement.
+2. Assurez-vous que le DNS pointe vers votre serveur (enregistrement A).
+
+3. Lancez le déploiement :
+
+```bash
+./deploy.sh
+```
+
+Caddy détecte le domaine, obtient le certificat et active le HTTPS. Aucune gestion manuelle des certificats n'est nécessaire.
+
+> Pour un environnement local sans domaine, laissez `DOMAIN=localhost` : Caddy utilisera un certificat auto-signé.
 
 ### Rollback
 
