@@ -173,10 +173,22 @@ Copiez le template et remplissez les valeurs :
 
 ```bash
 cp .env.prod.example .env.prod.local
-# Éditez .env.prod.local : APP_SECRET, DATABASE_URL, MAILER_DSN, DEFAULT_URI
+# Éditez .env.prod.local : APP_SECRET, DATABASE_URL, MAILER_DSN, DEFAULT_URI,
+# DOMAIN, DB_PASSWORD, DB_ROOT_PASSWORD, WEB_HTTP_PORT, WEB_HTTPS_PORT
 ```
 
 > ⚠️ Ne commitez jamais `.env.prod.local`.
+
+### Ports d'écoute (serveur déjà utilisé)
+
+Si votre serveur a déjà des services sur `80`/`443`, Caddy peut écouter sur des ports hôtes différents :
+
+```env
+WEB_HTTP_PORT=8081
+WEB_HTTPS_PORT=8443
+```
+
+La base MySQL n'est **pas exposée** sur le port hôte en production (accès uniquement via le réseau Docker interne).
 
 ### 2. Générer un APP_SECRET fort
 
@@ -208,7 +220,7 @@ Le script effectue automatiquement :
 | MakerBundle / DebugBundle | Installés | Non installés (`--no-dev`) |
 | OPcache `validate_timestamps` | `1` | `0` (cache figé) |
 | Mailhog | Activé | Désactivé (SMTP réel) |
-| Nginx | Port `8080` | Derrière Caddy (ports `80`/`443`) |
+| Nginx | Port `8080` | Derrière Caddy (ports hôtes configurables, défaut `8081`/`8443`) |
 | Caddy | Non installé | Reverse proxy + HTTPS auto (Let's Encrypt) |
 | HTTPS | Non | À configurer (voir ci-dessous) |
 
@@ -232,6 +244,8 @@ DEFAULT_URI=https://app.tondomaine.com
 ```
 
 Caddy détecte le domaine, obtient le certificat et active le HTTPS. Aucune gestion manuelle des certificats n'est nécessaire.
+
+> ⚠️ Let's Encrypt (HTTP-01 / TLS-ALPN) exige que les ports **80** et **443** soient joignables depuis Internet. Si votre serveur utilise `WEB_HTTP_PORT=8081` / `WEB_HTTPS_PORT=8443` parce que 80/443 sont occupés, le HTTPS automatique ne fonctionnera pas tel quel : libérez les ports 80/443 ou configurez Caddy avec un challenge DNS-01 (plugin provider DNS).
 
 > Pour un environnement local sans domaine, laissez `DOMAIN=localhost` : Caddy utilisera un certificat auto-signé.
 

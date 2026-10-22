@@ -14,6 +14,7 @@ if [ -f .env.prod.local ]; then
 fi
 
 : "${DOMAIN:=localhost}"
+: "${WEB_HTTPS_PORT:=8443}"
 
 echo "==> Domain: $DOMAIN"
 echo "==> Pulling latest code..."
@@ -33,5 +34,9 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T php php 
 docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T php php bin/console cache:warmup --env=prod --no-debug
 
 echo "==> Deployment complete!"
-echo "Application: https://$DOMAIN"
+if [ "$WEB_HTTPS_PORT" = "443" ]; then
+    echo "Application: https://$DOMAIN"
+else
+    echo "Application: https://$DOMAIN:$WEB_HTTPS_PORT"
+fi
 echo "Caddy automatically provisions HTTPS certificates."

@@ -1,5 +1,6 @@
 # Production configuration with automatic HTTPS via Caddy
 # Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Ports are configurable via WEB_HTTP_PORT / WEB_HTTPS_PORT (defaults 8081/8443)
 
 services:
   caddy:
@@ -7,11 +8,12 @@ services:
     container_name: symfony_caddy
     restart: always
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
+      - "${WEB_HTTP_PORT:-8081}:80"
+      - "${WEB_HTTPS_PORT:-8443}:443"
+      - "${WEB_HTTPS_PORT:-8443}:443/udp"
     environment:
       DOMAIN: ${DOMAIN:-localhost}
+      WEB_HTTPS_PORT: ${WEB_HTTPS_PORT:-8443}
     volumes:
       - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -43,6 +45,7 @@ services:
 
   db:
     restart: always
+    ports: !reset []
     environment:
       MYSQL_DATABASE: ${DB_NAME:-symfony}
       MYSQL_USER: ${DB_USER:-symfony}

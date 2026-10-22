@@ -1,6 +1,15 @@
 # Caddy reverse proxy with automatic HTTPS
 # Set the DOMAIN environment variable (e.g. DOMAIN=app.tondomaine.com)
 
+{
+    default_sni {$DOMAIN:localhost}
+}
+
+http://{$DOMAIN:localhost} {
+    # Redirige vers HTTPS sur le port hôte exposé (WEB_HTTPS_PORT)
+    redir https://{$DOMAIN:localhost}:{$WEB_HTTPS_PORT:443}{uri} permanent
+}
+
 {$DOMAIN:localhost} {
     reverse_proxy nginx:80
 
