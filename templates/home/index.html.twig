@@ -6,8 +6,10 @@
 <div style="margin: 2em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; text-align: center;">
     <h1>Bienvenue sur votre projet Symfony 🎉</h1>
     <p>L'application fonctionne correctement avec Docker et Docker Compose.</p>
+    {% if app.environment == 'dev' %}
     <p>
         <a href="{{ path('_profiler_home') }}">Ouvrir le Web Profiler</a>
     </p>
+    {% endif %}
 </div>
 {% endblock %}
