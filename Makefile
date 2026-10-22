@@ -6,8 +6,8 @@ help: ## Affiche cette aide
 build: ## Construit les images Docker
 	docker compose build
 
-up: ## Démarre les conteneurs en arrière-plan
-	docker compose up -d
+up: ## Démarre les conteneurs en attendant les healthchecks (MySQL prêt avant de rendre la main)
+	docker compose up -d --wait
 
 down: ## Arrête et supprime les conteneurs
 	docker compose down
