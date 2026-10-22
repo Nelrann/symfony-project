@@ -21,7 +21,9 @@ echo "==> Pulling latest code..."
 git pull origin main
 
 echo "==> Building production images..."
-docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local build --no-cache
+# Sans --no-cache : le cache des couches (composer/apk) est réutilisé, seul le code
+# modifié (COPY . .) invalide le build -- indispensable sur une Petite machine
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local build
 
 echo "==> Starting services..."
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local up -d --wait --remove-orphans
