@@ -33,10 +33,10 @@ Résultat : un nouveau dépôt à votre nom (`github.com/<votre_compte>/mon-nouv
 git clone git@github.com:<votre_compte>/mon-nouveau-projet.git
 cd mon-nouveau-projet
 cp .env.prod.example .env.prod.local # à remplir plus tard, pour le premier deploy
-docker compose up -d --build
+docker compose up -d --build --wait # --wait attend que MySQL soit healthy
 docker compose exec php composer install
 docker compose exec php php bin/console doctrine:database:create --if-not-exists
-docker compose exec php php bin/console doctrine:migrations:migrate
+docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 ```
 
 Application dev : http://localhost:8080
@@ -79,10 +79,11 @@ cd symfony-docker
 ### 2. Démarrer les conteneurs
 
 ```bash
-docker compose up -d --build
+docker compose up -d --build --wait
 ```
 
 La première exécution construit l'image PHP et télécharge les images nécessaires (peut prendre quelques minutes).
+`--wait` attend que le healthcheck MySQL passe : sans lui, `doctrine:database:create` peut échouer en `Connection refused` sur un premier démarrage (initialisation de MySQL ~20-40 s).
 
 ### 3. Installer les dépendances PHP (si ce n'est pas déjà fait)
 
@@ -94,7 +95,7 @@ docker compose exec php composer install
 
 ```bash
 docker compose exec php php bin/console doctrine:database:create --if-not-exists
-docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
+docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 ```
 
 ### 5. Accéder à l'application

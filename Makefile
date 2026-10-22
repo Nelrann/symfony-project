@@ -34,13 +34,13 @@ db-create: ## Crée la base de données
 	docker compose exec php php bin/console doctrine:database:create --if-not-exists
 
 migrate: ## Exécute les migrations
-	docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
+	docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 
 install: ## Installation complète du projet
-	docker compose up -d --build
+	docker compose up -d --build --wait
 	docker compose exec php php bin/console tailwind:build
 	docker compose exec php php bin/console doctrine:database:create --if-not-exists
-	docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction
+	docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 	@echo "Projet installé avec succès !"
 	@echo "Application : http://localhost:8080"
 	@echo "Mailhog     : http://localhost:8025"
