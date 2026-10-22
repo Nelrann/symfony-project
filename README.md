@@ -13,18 +13,32 @@ Aucune installation locale de PHP, Composer, MySQL ou Nginx n'est nécessaire.
 
 Ce dépôt est conçu pour servir de **base réutilisable**. Tout ce qui est spécifique à un projet vit dans des fichiers non committés (`.env.local`, `.env.prod.local`) ou dans `templates/`.
 
-### 1. Marquer le dépôt comme template (une seule fois)
+### 1. Sur GitHub : créer le nouveau projet
 
-Sur GitHub : **Settings** → cocher **Template repository**.
+a. **Activer le mode template** — une seule fois pour ce dépôt :
+   sur https://github.com/Nelrann/symfony-project → **Settings** → **General** :
+   cocher la case **Template repository** du bloc « Template repository ».
 
-### 2. Créer le nouveau projet
+b. **Créer le nouveau dépôt** :
+   sur la page principale du dépôt, bouton vert **Use this template** →
+   **Create a new repository**
+   (ou l'URL directe : https://github.com/Nelrann/symfony-project/generate)
 
-Depuis GitHub : bouton **Use this template** → *Create a new repository* (historique vierge, bonne pratique).
+   - *Owner* : `Nelrann`
+   - *Repository name* : le nom du nouveau projet (ex. `mon-nouveau-projet`)
+   - *Repository visibility* : Public ou Private selon l'usage
+   - *Description* : facultatif
+   - laisser **"Include all branches"** décoché
+   - **Create repository from template**
+
+Résultat : un nouveau dépôt `github.com/Nelrann/mon-nouveau-projet`, avec la stack complète, un historique git vierge, et aucun secret (`.env.prod.local` n'est pas versionné).
+
+### 2. Cloner le nouveau dépôt
 
 ```bash
-git clone git@github.com:TON_COMPTE/ton-nouveau-projet.git
-cd ton-nouveau-projet
-cp .env.example .env.local 2>/dev/null || true
+git clone git@github.com:Nelrann/mon-nouveau-projet.git
+cd mon-nouveau-projet
+cp .env.prod.example .env.prod.local # à remplir plus tard, pour le premier deploy
 docker compose up -d --build
 docker compose exec php composer install
 docker compose exec php php bin/console doctrine:database:create --if-not-exists
