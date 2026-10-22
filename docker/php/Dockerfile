@@ -33,8 +33,11 @@ RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
         exif \
         pcntl
 
-# Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Install Composer (le vrai binaire, appelé par le wrapper qui prend un flock)
+COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer-real
+
+# Wrapper Composer : verrouille pour éviter deux installs concurrents
+COPY --chmod=755 composer-wrapper.sh /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
