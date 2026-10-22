@@ -41,6 +41,9 @@ services:
     environment:
       APP_ENV: prod
       APP_DEBUG: "0"
+      # Creds injectés depuis .env.prod.local (source .env.prod.local par deploy.sh),
+      # sinon l'image utiliserait le .env baked avec des creds dev
+      DATABASE_URL: "mysql://${DB_USER:-symfony}:${DB_PASSWORD:?DB_PASSWORD manquant dans .env.prod.local}@db:3306/${DB_NAME:-symfony}?serverVersion=8.0&charset=utf8mb4"
     volumes: !reset []
 
   db:
