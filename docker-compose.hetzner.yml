@@ -1,0 +1,48 @@
+# Hetzner Cloud deployment with automatic HTTPS via Caddy
+# Usage: docker compose -f docker-compose.yml -f docker-compose.hetzner.yml up -d --build
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: symfony_caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - symfony
+    depends_on:
+      - nginx
+
+  nginx:
+    # Nginx no longer needs to expose ports; Caddy handles public traffic
+    ports: []
+
+  php:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile.prod
+    restart: unless-stopped
+    environment:
+      APP_ENV: prod
+      APP_DEBUG: "0"
+
+  db:
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME:-symfony}
+      MYSQL_USER: ${DB_USER:-symfony}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+
+  mailhog:
+    profiles: ["debug"]
+
+volumes:
+  caddy_data:
+  caddy_config:
