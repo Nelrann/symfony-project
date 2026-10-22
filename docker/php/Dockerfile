@@ -44,6 +44,13 @@ COPY php.ini /usr/local/etc/php/conf.d/custom.ini
 
 # Create user to avoid permission issues
 RUN addgroup -g 1000 www && adduser -u 1000 -G www -s /bin/sh -D www
+
+# Entrypoint dev : si le bind-mount n'a pas de vendor/ (checkout fraîchement
+# cloné), lance composer install au démarrage avant de lancer php-fpm.
+# (prod : le vendor est baked dans l'image, pas de bind — Dockerfile.prod n'en a pas besoin)
+COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["docker-entrypoint.sh"]
+
 USER www
 
 EXPOSE 9000
