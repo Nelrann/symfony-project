@@ -11,6 +11,15 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # php-fpm ne démarre qu'après le composer install de l'entrypoint :
+    # ce healthcheck permet à `docker compose up --wait` d'attendre la fin
+    # de l'installation avant de lancer les commandes Doctrine/Composer.
+    healthcheck:
+      test: ["CMD-SHELL", "pgrep -f 'php-fpm: master' > /dev/null"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 120s
 
   nginx:
     image: nginx:alpine
