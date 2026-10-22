@@ -38,6 +38,11 @@ services:
     # Nom d'image dérivé du DOMAIN (.env.prod.local) : deux projects peuvent coexister
     # sur le même server sans collision de tag d'image.
     image: ${DOMAIN:-symfony-project}-prod
+    # Injecte les secrets et variables de .env.prod.local dans le container
+    # (APP_SECRET, MAILER_DSN, DEFAULT_URI, ...) : --env-file ne sert qu'à
+    # l'interpolation par compose, pas à l'environnement du container.
+    env_file:
+      - .env.prod.local
     # var/tailwind contient le binaire Tailwind téléchargé (~80 Mo) : bind du
     # dossier MACHE (./var/tailwind, gitignore) pour ne PAS le re-télécharger à
     # chaque deploy — dans le container il serait perdu à chaque recreate.
