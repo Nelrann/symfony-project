@@ -35,7 +35,21 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.
 echo "==> Clearing and warming cache..."
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php php bin/console tailwind:build --minify
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php php bin/console cache:clear --env=prod --no-debug
+
+echo "==> Compiling assets into public/assets (servis en statique par nginx)..."
+# Le container php prod n'a pas de bind : on exécute la compilation via un
+# container jetable monté sur l'arbre hôte pour que nginx (bind ./) serve
+# les fichiers compilés directement, sans passer par PHP/FPM.
+PHP_IMAGE=$(docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local config --images | grep -E 'symfony-prod-php' | head -1)
+docker run --rm \
+    -v "$PWD":/var/www/html \
+    -w /var/www/html \
+    "$PHP_IMAGE" php bin/console asset-map:compile --env=prod
+
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php php bin/console cache:warmup --env=prod --no-debug
+
+echo "==> Restarting PHP (OPcache validate_timestamps=0 + preload : le kernel resterait sinon en mémoire-cache après le rebuild du cache)..."
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local restart php nginx
 
 echo "==> Deployment complete!"
 if [ "$WEB_HTTPS_PORT" = "443" ]; then

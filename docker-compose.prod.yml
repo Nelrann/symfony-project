@@ -34,6 +34,9 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile.prod
+    # Nom d'image explicite : évite la collision avec l'image dev (symfony-project-php)
+    # et donne un nom stable pour `docker run` dans deploy.sh (compilation assets sur l'arbre hôte)
+    image: symfony-prod-php
     restart: always
     depends_on:
       db:
