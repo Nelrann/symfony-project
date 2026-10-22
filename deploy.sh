@@ -24,6 +24,9 @@ echo "==> Building production images..."
 # --pull : re-vérifie les images de base (php/composer) sur le Docker Hub à
 # chaque deploy -- indispensable pour que les mises à jour de sécurité
 # (ex. CVE PHP critiques) se propagent sans intervention manuelle.
+# mkdir avant up : le point de montage ./var/tailwind doit appartenir à l'utilisateur
+# de deploy (uid 1000 = www dans le container) — un create auto par docker serait root-owned.
+mkdir -p var/tailwind
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local build --pull
 
 echo "==> Starting services..."
@@ -37,14 +40,12 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php php bin/console cache:clear --env=prod --no-debug
 
 echo "==> Compiling assets into public/assets (servis en statique par nginx)..."
-# Le container php prod n'a pas de bind : on exécute la compilation via un
-# container jetable monté sur l'arbre hôte pour que nginx (bind ./) serve
-# les fichiers compilés directement, sans passer par PHP/FPM.
-PHP_IMAGE=$(docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local config --images | grep -E 'symfony-prod-php' | head -1)
-docker run --rm \
-    -v "$PWD":/var/www/html \
-    -w /var/www/html \
-    "$PHP_IMAGE" php bin/console asset-map:compile --env=prod
+# La compilation tourne dans le container php (vendor complet de l'image),
+# puis on copie le résultat vers l'arbre hôte via tar over exec : nginx (bind ./)
+# sert les fichiers compilés directement, sans passer par PHP/FPM.
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php php bin/console asset-map:compile --env=prod
+mkdir -p public/assets
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php sh -c 'tar -C /var/www/html/public -cf - assets' | tar -C public -xf -
 
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php php bin/console cache:warmup --env=prod --no-debug
 

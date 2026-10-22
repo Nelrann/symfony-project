@@ -19,7 +19,9 @@ COPY . .
 
 # Run post-install scripts (cache warmup, assets, etc.)
 RUN composer dump-autoload --optimize --classmap-authoritative \
-    && rm -rf var/cache var/log
+    # var/tailwind est retiré : remplacé par le volume nommé tailwind_bin
+    # (sinon le bundle mkdir 0777 dans un dossier root-owned du volume vide échouerait)
+    && rm -rf var/cache var/log var/tailwind
 
 # ---- Stage 2: Production image ----
 FROM php:8.3-fpm-alpine
@@ -80,8 +82,9 @@ WORKDIR /var/www/html
 # Copy application from builder stage
 COPY --from=builder --chown=www:www /app /var/www/html
 
-# Ensure var directory is writable
-RUN mkdir -p var/cache var/log var/share \
+# Ensure var directory is writable (var/tailwind inclus : point de montage du
+# volume tailwind_bin, possède un owner www sinon le bundle ne peut pas y écrire)
+RUN mkdir -p var/cache var/log var/share var/tailwind \
     && chown -R www:www var
 
 USER www

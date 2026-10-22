@@ -37,6 +37,12 @@ services:
     # Nom d'image explicite : évite la collision avec l'image dev (symfony-project-php)
     # et donne un nom stable pour `docker run` dans deploy.sh (compilation assets sur l'arbre hôte)
     image: symfony-prod-php
+    # var/tailwind contient le binaire Tailwind téléchargé (~80 Mo) : bind du
+    # dossier MACHE (./var/tailwind, gitignore) pour ne PAS le re-télécharger à
+    # chaque deploy — dans le container il serait perdu à chaque recreate.
+    # Ownership : www du container = uid 1000 = user de deploy sur le serveur → les deux peuvent écrire.
+    volumes: !override
+      - ./var/tailwind:/var/www/html/var/tailwind
     restart: always
     depends_on:
       db:
@@ -47,7 +53,6 @@ services:
       # Creds injectés depuis .env.prod.local (source .env.prod.local par deploy.sh),
       # sinon l'image utiliserait le .env baked avec des creds dev
       DATABASE_URL: "mysql://${DB_USER:-symfony}:${DB_PASSWORD:?DB_PASSWORD manquant dans .env.prod.local}@db:3306/${DB_NAME:-symfony}?serverVersion=8.0&charset=utf8mb4"
-    volumes: !reset []
 
   db:
     restart: always
