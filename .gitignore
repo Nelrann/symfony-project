@@ -10,3 +10,8 @@
 /vendor/
 ###< symfony/framework-bundle ###
 composer
+
+###> symfony/asset-mapper ###
+/public/assets/
+/assets/vendor/
+###< symfony/asset-mapper ###

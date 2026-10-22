@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+/* Thème - Tailwind v4 (CSS-first) : variables utilitaires custom */
+@theme {
+    --color-brand: #2563eb;
+    --color-brand-dark: #1e40af;
+}
+
+body {
+    @apply bg-slate-50 text-slate-800 antialiased;
+}

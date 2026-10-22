@@ -3,12 +3,23 @@
 {% block title %}Bienvenue sur Symfony !{% endblock %}
 
 {% block body %}
-<div style="margin: 2em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; text-align: center;">
-    <h1>Bienvenue sur votre projet Symfony 🎉</h1>
-    <p>L'application fonctionne correctement avec Docker et Docker Compose.</p>
+<div class="mx-auto mt-16 max-w-3xl px-6 text-center">
+    <h1 class="text-4xl font-bold tracking-tight text-brand md:text-5xl">
+        Bienvenue sur votre projet Symfony 🎉
+    </h1>
+    <p class="mt-4 text-lg text-slate-600">
+        L'application fonctionne correctement avec Docker et Docker Compose.
+    </p>
+
+    <div class="mt-8 rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
+        <p class="text-slate-700">
+            Tailwind CSS v4 est branché via l'AssetMapper — aucun build Node requis.
+        </p>
+    </div>
+
     {% if app.environment == 'dev' %}
-    <p>
-        <a href="{{ path('_profiler_home') }}">Ouvrir le Web Profiler</a>
+    <p class="mt-6">
+        <a href="{{ path('_profiler_home') }}" class="text-sm text-slate-500 underline">Ouvrir le Web Profiler</a>
     </p>
     {% endif %}
 </div>

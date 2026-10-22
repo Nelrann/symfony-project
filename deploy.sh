@@ -33,6 +33,7 @@ echo "==> Running database migrations..."
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=prod
 
 echo "==> Clearing and warming cache..."
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php php bin/console tailwind:build --minify
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php php bin/console cache:clear --env=prod --no-debug
 docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php php bin/console cache:warmup --env=prod --no-debug
 
