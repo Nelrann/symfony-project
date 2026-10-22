@@ -163,6 +163,75 @@ docker compose build --no-cache
 - **Cache Symfony** : en cas d'erreur bizarre, videz le cache avec `make cache-clear`.
 - **Base de données inaccessible** : vérifiez que le conteneur `db` est démarré (`docker compose ps`) et que `DATABASE_URL` pointe bien vers `db`.
 
+## Déploiement en production
+
+Une configuration de production est fournie via `docker-compose.prod.yml` et `docker/php/Dockerfile.prod`.
+
+### 1. Préparer les secrets
+
+Copiez le template et remplissez les valeurs :
+
+```bash
+cp .env.prod.example .env.prod.local
+# Éditez .env.prod.local : APP_SECRET, DATABASE_URL, MAILER_DSN, DEFAULT_URI
+```
+
+> ⚠️ Ne commitez jamais `.env.prod.local`.
+
+### 2. Générer un APP_SECRET fort
+
+```bash
+php -r "echo bin2hex(random_bytes(16));"
+```
+
+### 3. Déployer
+
+```bash
+./deploy.sh
+```
+
+Le script effectue automatiquement :
+1. `git pull`
+2. Build des images de production (code + dépendances baked dans l'image)
+3. Démarrage des services
+4. Exécution des migrations Doctrine
+5. Vidage et réchauffage du cache
+
+### Différences avec le dev
+
+| Élément | Dev | Prod |
+|---------|-----|------|
+| Code source | Monté en volume | Baked dans l'image |
+| `APP_ENV` | `dev` | `prod` |
+| `APP_DEBUG` | `true` | `false` |
+| Web Profiler | Activé | Désactivé |
+| MakerBundle / DebugBundle | Installés | Non installés (`--no-dev`) |
+| OPcache `validate_timestamps` | `1` | `0` (cache figé) |
+| Mailhog | Activé | Désactivé (SMTP réel) |
+| Nginx | Port `8080` | Ports `80`/`443` |
+| HTTPS | Non | À configurer (voir ci-dessous) |
+
+### HTTPS / SSL
+
+Pour activer HTTPS, modifiez `docker/nginx/prod.conf` pour écouter sur `443 ssl` et montez vos certificats :
+
+```yaml
+# docker-compose.prod.yml (section nginx)
+volumes:
+  - ./docker/nginx/prod.conf:/etc/nginx/conf.d/default.conf:ro
+  - ./certs/fullchain.pem:/etc/nginx/certs/fullchain.pem:ro
+  - ./certs/privkey.pem:/etc/nginx/certs/privkey.pem:ro
+```
+
+Vous pouvez utiliser [Let's Encrypt](https://letsencrypt.org/) avec un reverse proxy (Traefik, Caddy) ou générer les certificats manuellement.
+
+### Rollback
+
+```bash
+git checkout <commit-précédent>
+./deploy.sh
+```
+
 ## Licence
 
 Ce projet est fourni à titre d'exemple.
