@@ -1,4 +1,4 @@
-.PHONY: help build up down restart logs shell composer console cache-clear
+.PHONY: help build up down restart logs shell composer console cache-clear db-create migrate install tailwind tailwind-watch
 
 help: ## Affiche cette aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -36,8 +36,15 @@ db-create: ## Crée la base de données
 migrate: ## Exécute les migrations
 	docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
 
+tailwind: ## Compile les styles Tailwind
+	docker compose exec php php bin/console tailwind:build
+
+tailwind-watch: ## Recompile Tailwind à chaque modification
+	docker compose exec php php bin/console tailwind:build --watch
+
 install: ## Installation complète du projet
 	docker compose up -d --build --wait
+	docker compose exec php composer install
 	docker compose exec php php bin/console tailwind:build
 	docker compose exec php php bin/console doctrine:database:create --if-not-exists
 	docker compose exec php php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration

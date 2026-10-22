@@ -58,4 +58,4 @@ if [ "$WEB_HTTPS_PORT" = "443" ]; then
 else
     echo "Application: https://$DOMAIN:$WEB_HTTPS_PORT"
 fi
-echo "Caddy automatically provisions HTTPS certificates."
+echo "HTTPS is served by Caddy (internal certificate by default; see README)."
