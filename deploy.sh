@@ -23,10 +23,10 @@ echo "==> Building production images..."
 docker compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
 
 echo "==> Starting services..."
-DOMAIN="$DOMAIN" docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+DOMAIN="$DOMAIN" docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --wait --remove-orphans
 
 echo "==> Running database migrations..."
-docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T php php bin/console doctrine:migrations:migrate --no-interaction --env=prod
+docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T php php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=prod
 
 echo "==> Clearing and warming cache..."
 docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T php php bin/console cache:clear --env=prod --no-debug
