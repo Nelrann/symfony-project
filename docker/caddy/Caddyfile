@@ -11,6 +11,13 @@ http://{$DOMAIN:localhost} {
 }
 
 {$DOMAIN:localhost} {
+    # Certificat issué localement par Caddy : indispensable quand ce Caddy n'est
+    # pas exposé directement sur Internet (un Caddy edge en amont possède déjà
+    # le vrai certificat Let's Encrypt sur les ports 80/443).
+    # Si ce Caddy est un jour exposé directement (ports 80/443 à lui),
+    # retirer cette ligne pour réactiver Let's Encrypt.
+    tls internal
+
     reverse_proxy nginx:80
 
     # Security headers
