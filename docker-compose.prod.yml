@@ -1,11 +1,12 @@
 # Production configuration with automatic HTTPS via Caddy
 # Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 # Ports are configurable via WEB_HTTP_PORT / WEB_HTTPS_PORT (defaults 8081/8443)
+# NOTE : le stack n'a pas de container_name fixe → les names sont préfixés par le
+# nom du projet compose (dossier) : plusieurs projects peuvent cohabiter sur un server.
 
 services:
   caddy:
     image: caddy:2-alpine
-    container_name: symfony_caddy
     restart: always
     ports:
       - "${WEB_HTTP_PORT:-8081}:80"
@@ -34,9 +35,9 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile.prod
-    # Nom d'image explicite : évite la collision avec l'image dev (symfony-project-php)
-    # et donne un nom stable pour `docker run` dans deploy.sh (compilation assets sur l'arbre hôte)
-    image: symfony-prod-php
+    # Nom d'image dérivé du DOMAIN (.env.prod.local) : deux projects peuvent coexister
+    # sur le même server sans collision de tag d'image.
+    image: ${DOMAIN:-symfony-project}-prod
     # var/tailwind contient le binaire Tailwind téléchargé (~80 Mo) : bind du
     # dossier MACHE (./var/tailwind, gitignore) pour ne PAS le re-télécharger à
     # chaque deploy — dans le container il serait perdu à chaque recreate.

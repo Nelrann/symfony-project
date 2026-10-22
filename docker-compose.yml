@@ -3,7 +3,6 @@ services:
     build:
       context: ./docker/php
       dockerfile: Dockerfile
-    container_name: symfony_php
     restart: unless-stopped
     volumes:
       - ./:/var/www/html
@@ -14,7 +13,6 @@ services:
 
   nginx:
     image: nginx:alpine
-    container_name: symfony_nginx
     restart: unless-stopped
     ports:
       - "8080:80"
@@ -28,7 +26,6 @@ services:
 
   db:
     image: mysql:8.0
-    container_name: symfony_db
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: symfony
@@ -44,7 +41,6 @@ services:
 
   mailhog:
     image: mailhog/mailhog:latest
-    container_name: symfony_mailhog
     restart: unless-stopped
     ports:
       - "1025:1025"   # SMTP

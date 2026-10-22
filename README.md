@@ -9,6 +9,47 @@ Ce projet est une application [Symfony](https://symfony.com) exécutée entière
 
 Aucune installation locale de PHP, Composer, MySQL ou Nginx n'est nécessaire.
 
+## Créer un nouveau projet à partir de ce template
+
+Ce dépôt est conçu pour servir de **base réutilisable**. Tout ce qui est spécifique à un projet vit dans des fichiers non committés (`.env.local`, `.env.prod.local`) ou dans `templates/`.
+
+### 1. Marquer le dépôt comme template (une seule fois)
+
+Sur GitHub : **Settings** → cocher **Template repository**.
+
+### 2. Créer le nouveau projet
+
+Depuis GitHub : bouton **Use this template** → *Create a new repository* (historique vierge, bonne pratique).
+
+```bash
+git clone git@github.com:TON_COMPTE/ton-nouveau-projet.git
+cd ton-nouveau-projet
+cp .env.example .env.local 2>/dev/null || true
+docker compose up -d --build
+docker compose exec php composer install
+docker compose exec php php bin/console doctrine:database:create --if-not-exists
+docker compose exec php php bin/console doctrine:migrations:migrate
+```
+
+Application dev : http://localhost:8080
+
+### 3. Personnaliser (checklist par projet)
+
+| Élément | Où | Pourquoi |
+|---------|-----|----------|
+| Branding page d'accueil | `templates/home/index.html.twig`, `assets/styles/app.css` | contenu/footer |
+| `DOMAIN` | `.env.prod.local` | Caddy HTTPS + nom de l'image PHP (`${DOMAIN}-prod`) |
+| `WEB_HTTP_PORT` / `WEB_HTTPS_PORT` | `.env.prod.local` | **uniques par serveur** (8081/8443 pour le 1er, 8082/8444… pour le suivant) |
+| `APP_SECRET` | `.env.prod.local` | aléatoire et différent du template |
+| `DB_NAME` / `DB_USER` / `DB_PASSWORD` | `.env.prod.local` | base dédiée au projet |
+| DNS (enregistrement A) | registrar | pointe vers le serveur |
+
+> Les noms de containers et d'images sont dérivés du **dossier du projet** et du `DOMAIN` : plusieurs déploiements de ce template peuvent cohabiter sur le même serveur tant que les ports diffèrent.
+
+### 4. Multi-projects sur un même serveur
+
+Chaque projet a son propre network Docker, ses propres volumes et ports. Le Caddy **edge** (celui qui écoute sur 80/443) doit router chaque domaine vers les ports WebSocket du projet correspondant — c'est lui qui choisit `8443` vs `8444` etc.
+
 ## Services
 
 | Service   | Image / Build      | Port hôte | Description                       |
@@ -204,10 +245,12 @@ php -r "echo bin2hex(random_bytes(16));"
 
 Le script effectue automatiquement :
 1. `git pull`
-2. Build des images de production (code + dépendances baked dans l'image)
-3. Démarrage des services
+2. Build des images de production (`--pull` : propagation des correctifs PHP/OS)
+3. Démarrage des services (`--wait` sur les healthchecks)
 4. Exécution des migrations Doctrine
-5. Vidage et réchauffage du cache
+5. Build Tailwind + compilation des assets dans `public/assets` (servis statiquement par nginx)
+6. Vidage et réchauffage du cache prod
+7. Reload de php-fpm + nginx (purge OPcache/preload)
 
 ### Différences avec le dev
 
