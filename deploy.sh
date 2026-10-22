@@ -21,17 +21,17 @@ echo "==> Pulling latest code..."
 git pull origin main
 
 echo "==> Building production images..."
-docker compose -f docker-compose.yml -f docker-compose.prod.yml build --no-cache
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local build --no-cache
 
 echo "==> Starting services..."
-DOMAIN="$DOMAIN" docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --wait --remove-orphans
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local up -d --wait --remove-orphans
 
 echo "==> Running database migrations..."
-docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T php php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=prod
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration --env=prod
 
 echo "==> Clearing and warming cache..."
-docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T php php bin/console cache:clear --env=prod --no-debug
-docker compose -f docker-compose.yml -f docker-compose.prod.yml exec -T php php bin/console cache:warmup --env=prod --no-debug
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php php bin/console cache:clear --env=prod --no-debug
+docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod.local exec -T php php bin/console cache:warmup --env=prod --no-debug
 
 echo "==> Deployment complete!"
 if [ "$WEB_HTTPS_PORT" = "443" ]; then
