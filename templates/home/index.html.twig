@@ -1,0 +1,13 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Bienvenue sur Symfony !{% endblock %}
+
+{% block body %}
+<div style="margin: 2em auto; max-width: 800px; width: 95%; font: 18px/1.5 sans-serif; text-align: center;">
+    <h1>Bienvenue sur votre projet Symfony 🎉</h1>
+    <p>L'application fonctionne correctement avec Docker et Docker Compose.</p>
+    <p>
+        <a href="{{ path('_profiler_home') }}">Ouvrir le Web Profiler</a>
+    </p>
+</div>
+{% endblock %}
