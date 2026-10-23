@@ -110,7 +110,7 @@ Chaque projet a son propre network Docker, ses propres volumes et ports. Le Cadd
 
 ## Commandes utiles (Makefile)
 
-Un `Makefile` est fourni pour simplifier les opérations courantes :
+Un `Makefile` est fourni pour simplifier les opérations courantes. **Il pilote le stack de dev par défaut** (`docker-compose.yml` seul, sans Caddy) ; les cibles suffixées `-prod` chargent l'overlay production.
 
 | Commande | Description |
 |----------|-------------|
@@ -118,7 +118,7 @@ Un `Makefile` est fourni pour simplifier les opérations courantes :
 | `make install` | Installation complète (dépendances, Tailwind, BDD, migrations) |
 | `make build` | Construit les images Docker |
 | `make up` | Démarre les conteneurs en attendant les healthchecks |
-| `make down` | Arrête et supprime les conteneurs |
+| `make down` | Arrête et supprime les conteneurs (stack dev) |
 | `make restart` | Redémarre les conteneurs |
 | `make logs` | Affiche les logs en continu |
 | `make shell` | Ouvre un shell dans le conteneur PHP |
@@ -129,6 +129,11 @@ Un `Makefile` est fourni pour simplifier les opérations courantes :
 | `make migrate` | Exécute les migrations Doctrine |
 | `make tailwind` | Compile les styles Tailwind |
 | `make tailwind-watch` | Recompile Tailwind à chaque modification |
+| `make up-prod` | Démarre le stack prod (Caddy inclus), sans build ni migrations |
+| `make down-prod` | Arrête et supprime le stack prod (Caddy inclus) |
+| `make logs-prod` | Affiche les logs du stack prod (Caddy inclus) |
+
+> Sur le serveur, **n'utilisez pas `make down`** : `caddy` n'étant déclaré que dans `docker-compose.prod.yml`, le fichier de base ne le connaît pas et le conteneur Caddy resterait actif (avec échec de suppression du réseau). Utilisez `make down-prod`, ou `./deploy.sh` pour un déploiement complet.
 
 Exemple :
 
@@ -357,6 +362,8 @@ Le script effectue automatiquement :
 9. le redémarrage de PHP-FPM et Nginx (purge OPcache/preload).
 
 > `deploy.sh` déploie toujours la branche `main` du dépôt distant. Le serveur doit donc pouvoir faire un `git pull` sans conflit (pas de modifications locales).
+
+Pour arrêter le stack de production (Caddy inclus), utilisez `make down-prod` — jamais `docker compose down` ni `make down`, qui ne connaissent pas `caddy` (déclaré uniquement dans l'overlay) et laissent donc le reverse proxy tourner.
 
 ### HTTPS et certificats
 
